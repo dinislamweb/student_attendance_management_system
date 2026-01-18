@@ -1,5 +1,5 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 # 🔹 Custom User Manager
 class UserManager(BaseUserManager):
@@ -131,13 +131,14 @@ class Attendance(models.Model):
         return f"{self.student.user.full_name} - {self.class_obj.code if self.class_obj else 'N/A'} - {self.date} - {self.get_status_display()}"
 
 
-# 🔹 Notification Model (Teacher → Parent alerts)
 class Notification(models.Model):
     parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey("Student", on_delete=models.CASCADE)
+    subject = models.CharField(max_length=200, default="No Subject")  # ✅ default দেওয়া হলো
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Notification for {self.parent.full_name} - {self.student.roll_no}"
+        return f"{self.parent.full_name} - {self.subject}"
+

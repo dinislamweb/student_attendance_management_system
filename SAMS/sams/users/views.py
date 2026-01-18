@@ -1,17 +1,20 @@
 import random
+from datetime import datetime
+from collections import defaultdict
+
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.core.cache import cache
-from datetime import datetime
-from .models import Student, Attendance, Class, TimeSlot
-from collections import defaultdict
 from django.http import HttpResponse
-from reportlab.pdfgen import canvas
 from django.conf import settings
+
+from reportlab.pdfgen import canvas
+
+from .models import Student, Attendance, Class, TimeSlot, Notification
+
 
 User = get_user_model()
 
@@ -376,9 +379,6 @@ def student_dashboard(request):
         'class_summary': class_summary_list
     })
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Student, Attendance
 
 @login_required
 def student_datewise_attendance(request, student_id):
@@ -469,20 +469,21 @@ def notify_parent(request, student_id, class_id):
 
 @login_required
 def parent_dashboard(request):
-    
+    # ✅ শুধু parent role allowed
     if not hasattr(request.user, 'role') or request.user.role != 'PARENT':
         return redirect('login')
 
-    
+    # ✅ Parent এর সব child বের করো
     children = Student.objects.filter(parent=request.user)
 
-    
+    # ✅ যদি নির্দিষ্ট student select করা হয়
     student_id = request.GET.get('student_id')
     if student_id:
         selected_student = children.filter(id=student_id).first()
         if selected_student:
             children = [selected_student]
 
+    # ✅ Attendance summary বানাও
     summary_data = []
     for student in children:
         assigned_classes = student.classes.all()
@@ -513,17 +514,42 @@ def parent_dashboard(request):
             'class_summary': class_summary
         })
 
+    # ✅ Notifications inbox আনো
+    notifications = Notification.objects.filter(parent=request.user).order_by('-created_at')
+
+    # ✅ Unread count বের করো
+    unread_count = notifications.filter(is_read=False).count()
+
+    # ❌ সব unread notification একসাথে read করে দেওয়া ঠিক না
+    # কারণ parent button এ click না করা পর্যন্ত unread থাকা উচিত।
+    # তাই এখানে শুধু count পাঠানো হবে, update করা হবে আলাদা view এ।
 
     return render(request, 'parent_dashboard.html', {
         'summary_data': summary_data,
-        'children': Student.objects.filter(parent=request.user),
-        'parent': request.user
+        'children': children,
+        'parent': request.user,
+        'notifications': notifications,
+        'unread_count': unread_count  # 👈 template এ badge দেখাতে পারবে
     })
-    
-from django.core.mail import send_mail
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Student, Class, Notification
+
+@login_required
+def parent_notifications(request):
+  # ধরে নিচ্ছি Notification model এ parent ফিল্ড আছে যা request.user কে রেফার করে
+  notifications = Notification.objects.filter(parent=request.user).order_by('-created_at')
+  unread_count = notifications.filter(is_read=False).count()
+  return render(request, 'parent_notifications.html', {
+      'notifications': notifications,
+      'unread_count': unread_count
+  })
+
+
+@login_required
+def mark_notification_read(request, note_id):
+    note = get_object_or_404(Notification, id=note_id, parent=request.user)
+    note.is_read = True
+    note.save()
+    return redirect('parent_notifications')   # ✅ এখন Notifications পেজে যাবে
+
 
 @login_required
 def notify_parent_view(request, student_id, class_id):

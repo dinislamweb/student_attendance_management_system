@@ -77,9 +77,9 @@
     {% endfor %}
   </table>
 
-  <!-- 🔙 Back to Student Dashboard -->
+  <!-- 🔙 Back to Parent Dashboard -->
   <div style="text-align:center;">
-    <a href="{% url 'student_dashboard' %}" class="back-btn">
+    <a href="{% url 'parent_dashboard' %}?student_id={{ student.id }}" class="back-btn">
       🔙 Back to Dashboard
     </a>
   </div>

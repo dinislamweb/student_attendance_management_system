@@ -18,7 +18,9 @@ urlpatterns = [
 
     # 📧 Parent Notification (Teacher only)
     path('teacher/notify/<int:student_id>/<int:class_id>/', views.notify_parent_view, name='notify_parent'),
-
+    path('parent/notification/read/<int:note_id>/', views.mark_notification_read, name='mark_notification_read'),
+    path('parent/notifications/', views.parent_notifications, name='parent_notifications'),
+    
     # 📋 Attendance Management
     path('take-attendance/<int:class_id>/<str:date>/', views.take_attendance, name='take_attendance'),
     path('attendance-summary/<int:class_id>/', views.attendance_summary, name='attendance_summary'),

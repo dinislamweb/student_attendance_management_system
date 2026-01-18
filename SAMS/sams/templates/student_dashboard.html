@@ -30,6 +30,7 @@
     color: #333;
     border-bottom: 2px solid #0077cc;
     padding-bottom: 5px;
+    text-align: center;
   }
   table {
     width: 100%;
@@ -76,45 +77,54 @@
 
 <div class="container">
   <h2>Student Dashboard</h2>
-  <p class="student-info">
-    Student: {{ student.user.full_name }}<br>
-    ID: {{ student.roll_no }}<br>
-    Semester: {{ student.semester }}
-  </p>
-  <h3 style="text-align:center; color:#dc3545; font-weight:bold;">
-  Class-wise Attendance Summary
-</h3>
 
-  
+  <!-- ✅ Student Info -->
+  {% if student %}
+    <p class="student-info">
+      Student: {{ student.user.full_name }}<br>
+      ID: {{ student.roll_no }}<br>
+      Semester: {{ student.semester }}
+    </p>
+  {% else %}
+    <p style="text-align:center; color:#dc3545; font-weight:bold;">
+      No student information available.
+    </p>
+  {% endif %}
+
+  <!-- ✅ Attendance Summary -->
+  <h3>Class-wise Attendance Summary</h3>
   {% if class_summary %}
-  <table>
-    <tr>
-      <th>Class</th>
-      <th>Total Classes</th>
-      <th>Present</th>
-      <th>Absent</th>
-      <th>Attendance %</th>
-    </tr>
-    {% for summary in class_summary %}
-    <tr>
-      <td>{{ summary.class_obj.code }} - {{ summary.class_obj.title }}</td>
-      <td>{{ summary.total }}</td>
-      <td><span class="present">{{ summary.present }}</span></td>
-      <td><span class="absent">{{ summary.absent }}</span></td>
-      <td>{{ summary.percentage }}%</td>
-    </tr>
-    {% endfor %}
-  </table>
+    <table>
+      <tr>
+        <th>Class</th>
+        <th>Total Classes</th>
+        <th>Present</th>
+        <th>Absent</th>
+        <th>Attendance %</th>
+      </tr>
+      {% for summary in class_summary %}
+        <tr>
+          <td>{{ summary.class_obj.code }} - {{ summary.class_obj.title }}</td>
+          <td>{{ summary.total }}</td>
+          <td><span class="present">{{ summary.present }}</span></td>
+          <td><span class="absent">{{ summary.absent }}</span></td>
+          <td>{{ summary.percentage }}%</td>
+        </tr>
+      {% endfor %}
+    </table>
   {% else %}
     <p style="text-align:center; color:#dc3545; font-weight:bold;">
       No attendance summary available.
     </p>
   {% endif %}
 
-  <!-- 🔘 Date-wise Attendance Button -->
-  <div style="text-align:center;">
-    <a href="{% url 'student_datewise_attendance' student.id %}" class="view-btn">View Date-wise Attendance
-    </a>
-  </div>
+  <!-- ✅ Date-wise Attendance Button -->
+  {% if student %}
+    <div style="text-align:center;">
+      <a href="{% url 'student_datewise_attendance' student.id %}" class="view-btn">
+        View Date-wise Attendance
+      </a>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .notification-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .notification-card strong {
+    color: #2c3e50;
+    font-size: 16px;
+  }
+  .notification-card small {
+    color: #777;
+    font-size: 12px;
+  }
+  .unread {
+    color: #dc3545;
+    font-weight: bold;
+  }
+  .mark-read-link {
+    font-size: 12px;
+    color: blue;
+    text-decoration: underline;
+    margin-left: 10px;
+  }
+</style>
+
+<div class="container mt-4">
+  <h2 class="text-center text-primary mb-4">📩 Notifications</h2>
+  <p class="text-muted text-center">Unread: {{ unread_count }}</p>
+
+  {% if notifications %}
+    {% for note in notifications %}
+      <div class="notification-card">
+        <strong>{{ note.subject }}</strong><br>
+        {{ note.message }}<br>
+        <small>{{ note.created_at|date:"d M Y H:i" }}</small>
+        {% if not note.is_read %}
+          <span class="unread">(Unread)</span>
+          <a href="{% url 'mark_notification_read' note.id %}" class="mark-read-link">Mark as read</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-center text-muted">No notifications yet.</p>
+  {% endif %}
+
+  <!-- Back button -->
+  <div class="text-center mt-4">
+    <a href="{% url 'parent_dashboard' %}" class="btn btn-primary">
+      🔙 Back to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
