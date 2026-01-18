@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .container {
+    max-width: 1000px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 25px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+  }
+  table, th, td {
+    border: 1px solid #ddd;
+  }
+  th {
+    background: #0077cc;
+    color: white;
+    padding: 12px;
+    text-align: center;
+  }
+  td {
+    padding: 10px;
+    text-align: center;
+  }
+  .edit-link {
+    color: #0077cc;
+    font-weight: bold;
+    text-decoration: none;
+    margin-right: 10px;
+  }
+  .edit-link:hover {
+    color: #005fa3;
+  }
+  .notify-link {
+    color: orange;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  .notify-link:hover {
+    color: darkorange;
+  }
+  .low-attendance {
+    color: red;
+    font-weight: bold;
+  }
+  .back-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 10px 20px;
+    background: #0077cc;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+  .back-btn:hover {
+    background: #005fa3;
+  }
+</style>
+
+<div class="container">
+  <h2>Attendance Summary for {{ class_obj.code }} - {{ class_obj.title }} ({{ class_obj.semester }})</h2>
+
+  <table>
+    <tr>
+      <th>Roll No</th>
+      <th>Name</th>
+      <th>Total Present</th>
+      <th>Total Absent</th>
+      <th>Total Classes</th>
+      <th>Attendance %</th>
+      <th>Action</th>
+    </tr>
+    {% for record in summary %}
+    <tr>
+      <td>{{ record.student.roll_no }}</td>
+      <td>{{ record.student.user.full_name }}</td>
+      <td>{{ record.present }}</td>
+      <td>{{ record.absent }}</td>
+      <td>{{ record.total_classes }}</td>
+      <td>
+        {% if record.percentage_attendance < 75 %}
+          <span class="low-attendance">{{ record.percentage_attendance }}%</span>
+        {% else %}
+          {{ record.percentage_attendance }}%
+        {% endif %}
+      </td>
+      <td>
+        <a href="{% url 'edit_attendance' record.student.id class_obj.id %}" class="edit-link">Edit</a>
+        {% if record.percentage_attendance < 75 %}
+          <a href="{% url 'notify_parent' record.student.id class_obj.id %}" class="notify-link">Notify Parent</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div style="text-align:center;">
+    <a href="{% url 'teacher_dashboard' %}" class="back-btn">← Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

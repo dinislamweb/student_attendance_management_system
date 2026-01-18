@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 25px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+  }
+  table, th, td {
+    border: 1px solid #ddd;
+  }
+  th {
+    background: #0077cc;
+    color: white;
+    padding: 12px;
+    text-align: center;
+  }
+  td {
+    padding: 10px;
+    text-align: center;
+  }
+  button {
+    padding: 12px 24px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #005fa3;
+  }
+
+  select.status-select {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    min-width: 120px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+  }
+
+  .absent {
+    background-color: #dc3545;
+    color: white;
+  }
+  .present-changed {
+    background-color: #90ee90;
+    color: #155724;
+    font-weight: bold;
+  }
+</style>
+
+<div class="container">
+
+  <h2>
+    {{ class_obj.code }} - {{ class_obj.title }} ({{ class_obj.semester }})<br>
+    Date: {{ date }}{% if time_slot %} | Time: {{ time_slot.start_time }} - {{ time_slot.end_time }}{% endif %}
+  </h2>
+
+  <form method="POST" onsubmit="return confirmSave()">
+    {% csrf_token %}
+    <table>
+      <tr>
+        <th>Roll No</th>
+        <th>Name</th>
+        <th>Status</th>
+      </tr>
+      {% for student in students %}
+      <tr>
+        <td>{{ student.roll_no }}</td>
+        <td>{{ student.user.full_name }}</td>
+        <td>
+          {% if attendance_locked %}
+            {% if student.attendance_status == 1 %}
+              Present
+            {% elif student.attendance_status == 0 %}
+              <span class="absent">Absent</span>
+            {% endif %}
+          {% else %}
+            <select name="status_{{ student.id }}"
+                    class="status-select {% if student.attendance_status == 0 %}absent{% endif %}"
+                    data-original="{{ student.attendance_status }}"
+                    onchange="updateSelect(this)">
+              <option value="1" {% if student.attendance_status == 1 %}selected{% endif %}>Present</option>
+              <option value="0" {% if student.attendance_status == 0 %}selected{% endif %}>Absent</option>
+            </select>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    {% if not attendance_locked %}
+      <div style="text-align:center; margin-top:20px;">
+        <button type="submit">Submit Attendance</button>
+      </div>
+    {% endif %}
+  </form>
+</div>
+
+<script>
+  function updateSelect(selectElement) {
+    const originalStatus = selectElement.getAttribute("data-original");
+    const newStatus = selectElement.value;
+
+    selectElement.classList.remove("absent", "present-changed");
+
+    if (newStatus === "1") {
+      if (originalStatus === "0") {
+        selectElement.classList.add("present-changed");
+      }
+    } else {
+      selectElement.classList.add("absent");
+    }
+  }
+
+  function confirmSave() {
+    return confirm("Are you sure you want to save attendance?");
+  }
+</script>
+{% endblock %}

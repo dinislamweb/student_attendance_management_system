@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+  }
+  .container {
+    max-width: 950px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 10px;
+  }
+  .parent-name {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+  }
+  h3 {
+    margin-top: 30px;
+    color: #333;
+    border-bottom: 2px solid #0077cc;
+    padding-bottom: 5px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+  }
+  th {
+    background: #0077cc;
+    color: white;
+    font-size: 15px;
+  }
+  td {
+    font-size: 14px;
+  }
+  .present {
+    color: #28a745;
+    font-weight: bold;
+  }
+  .absent {
+    color: #dc3545;
+    font-weight: bold;
+  }
+  .download-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 15px;
+    background: #0077cc;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.3s ease;
+  }
+  .download-btn:hover {
+    background: #005fa3;
+  }
+  .btn-section {
+    text-align: center;
+    margin-top: 20px;
+  }
+</style>
+
+<div class="container">
+  <h2>Parent Dashboard</h2>
+  <p class="parent-name">{{ parent.full_name }}</p>
+
+  <!-- Multiple child button section -->
+  {% if children|length > 1 %}
+    <div style="margin-bottom:20px; text-align:center;">
+      {% for student in children %}
+        <form method="get" action="{% url 'parent_dashboard' %}" style="display:inline-block; margin:5px;">
+          <input type="hidden" name="student_id" value="{{ student.id }}">
+          <button type="submit" class="download-btn">
+            {{ student.user.full_name }} ({{ student.roll_no }})
+          </button>
+        </form>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if summary_data %}
+    {% for item in summary_data %}
+      <h3>{{ item.student.user.full_name }} ({{ item.student.roll_no }})</h3>
+
+      <!-- Class-wise Attendance Summary Table -->
+      {% if item.class_summary %}
+      <table>
+        <tr>
+          <th>Class</th>
+          <th>Total Classes</th>
+          <th>Present</th>
+          <th>Absent</th>
+          <th>Attendance %</th>
+          <th>Download</th>
+        </tr>
+        {% for summary in item.class_summary %}
+        <tr>
+          <td>{{ summary.class_obj.code }} - {{ summary.class_obj.title }}</td>
+          <td>{{ summary.total }}</td>
+          <td><span class="present">{{ summary.present }}</span></td>
+          <td><span class="absent">{{ summary.absent }}</span></td>
+          <td>{{ summary.percentage }}%</td>
+          <td>
+            <a href="{% url 'download_class_summary_pdf' item.student.id summary.class_obj.id %}" class="download-btn">
+              ⬇️ PDF
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+
+      <!-- Combined PDF button -->
+      <div style="text-align:right; margin-top:10px;">
+        <a href="{% url 'download_all_class_summary_pdf' item.student.id %}" class="download-btn">
+          ⬇️ Download All Summaries (PDF)
+        </a>
+      </div>
+
+      <!-- Date-wise Attendance Button -->
+      <div class="btn-section">
+        <a href="{% url 'datewise_attendance' item.student.id %}" class="download-btn">
+          View Date-wise Attendance
+        </a>
+      </div>
+
+    {% endfor %}
+  {% else %}
+    <p style="text-align:center; color:#dc3545; font-weight:bold;">
+      No attendance records found.
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

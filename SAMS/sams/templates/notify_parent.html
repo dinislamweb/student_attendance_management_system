@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 20px;
+  }
+  p {
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  textarea {
+    resize: vertical;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: block;
+    width: 100%;
+  }
+  button:hover {
+    background: #005fa3;
+  }
+  .info-msg, .warning-msg, .success-msg {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+  .info-msg { color: green; }
+  .warning-msg { color: orange; }
+  .success-msg { color: green; }
+  .back-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 10px 20px;
+    background: #0077cc;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s ease;
+    text-align: center;
+  }
+  .back-btn:hover {
+    background: #005fa3;
+  }
+</style>
+
+<div class="container">
+  <h2>Notify Parent of {{ student.user.full_name }}</h2>
+  <p>Course: {{ class_obj.code }} - {{ class_obj.title }} ({{ class_obj.semester }})</p>
+  <p>Attendance Percentage: {{ percentage }}%</p>
+
+  {% if success %}
+    <p class="success-msg">✅ Email sent successfully to {{ student.parent.full_name }}</p>
+    <script>
+      setTimeout(function() {
+        var msg = document.querySelector(".success-msg");
+        if (msg) { msg.style.display = "none"; }
+      }, 2500);
+    </script>
+  {% endif %}
+
+  {% if percentage < 75 %}
+    <!-- ✅ CSRF token অবশ্যই রাখতে হবে -->
+    <form method="post" action="{% url 'notify_parent' student.id class_obj.id %}">
+      {% csrf_token %}
+      <label>Subject:</label>
+      <input type="text" name="subject"
+             value="Low Attendance Alert for {{ class_obj.code }}" required>
+
+      <label>Message:</label>
+      <textarea name="message" rows="6" required>
+Dear {{ student.parent.full_name }},
+
+Your child {{ student.user.full_name }} has an attendance percentage of {{ percentage }}%
+in the course {{ class_obj.code }} - {{ class_obj.title }} ({{ class_obj.semester }}),
+which is below the required 75% threshold.
+
+Please take necessary steps to improve attendance.
+
+Regards,
+Course Instructor
+      </textarea>
+
+      <button type="submit">Send Email</button>
+    </form>
+  {% else %}
+    <p class="info-msg">Attendance is above 75%. No need to notify.</p>
+  {% endif %}
+
+  {% if messages %}
+    <div id="msg-box">
+      {% for message in messages %}
+        <p class="warning-msg">{{ message }}</p>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(function() {
+        var box = document.getElementById("msg-box");
+        if (box) { box.style.display = "none"; }
+      }, 2000);
+    </script>
+  {% endif %}
+
+  <div style="text-align:center;">
+    <a href="{% url 'attendance_summary' class_obj.id %}" class="back-btn">← Back to Summary</a>
+  </div>
+</div>
+{% endblock %}

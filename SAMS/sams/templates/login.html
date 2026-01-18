@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  body {
+    background: #e0f2ff;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 18px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 520px;
+    margin: 50px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  }
+
+  h2 {
+    font-size: 30px;
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 12px;
+  }
+
+  h4 {
+    font-size: 20px;
+    text-align: center;
+    color: #555;
+    margin-bottom: 30px;
+    font-weight: normal;
+  }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+  }
+
+  .tabs a {
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    margin: 0 6px;
+    font-weight: bold;
+    font-size: 17px;
+    color: #0077cc;
+    background: #f0f8ff;
+  }
+
+  .tabs a.active {
+    background: #0077cc;
+    color: white;
+  }
+
+  form label {
+    font-size: 17px;
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  form input {
+    font-size: 16px;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  form button {
+    font-size: 17px;
+    width: 100%;
+    padding: 12px;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  form button:hover {
+    background: #005fa3;
+  }
+
+  .forgot-link {
+    text-align: center;
+    margin-top: 15px;
+  }
+  .forgot-link a {
+    color: #0077cc;
+    text-decoration: none;
+    font-size: 15px;
+  }
+  .forgot-link a:hover {
+    text-decoration: underline;
+  }
+
+  .error-inline {
+    font-size: 14px;
+    color: red;
+    margin-top: 4px;
+  }
+</style>
+
+<div class="container">
+  <h2>SAMS</h2>
+  <h4>Student Attendance Management System</h4>
+
+  <div class="tabs">
+    <a href="{% url 'login' %}" class="active">Login</a>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    <label>Email</label>
+    <input type="email" name="email" id="emailInput" placeholder="Enter your email" required>
+    {% for message in messages %}
+      {% if "email_error" in message.tags %}
+        <div id="emailError" class="error-inline">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+
+    <label>Password</label>
+    <input type="password" name="password" id="passwordInput" placeholder="Enter your password" required>
+    {% for message in messages %}
+      {% if "password_error" in message.tags %}
+        <div id="passwordError" class="error-inline">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+
+    <button type="submit">Login</button>
+  </form>
+
+  <div class="forgot-link">
+    <a href="{% url 'forgot_password' %}">Forgot your password?</a>
+  </div>
+</div>
+
+<!-- ✅ atuo hide error message within 3 seconds -->
+<script>
+  setTimeout(() => {
+    const emailError = document.getElementById("emailError");
+    const passwordError = document.getElementById("passwordError");
+
+    if (emailError) {
+      emailError.style.display = "none";
+    }
+    if (passwordError) {
+      passwordError.style.display = "none";
+    }
+  }, 3000); // 3000ms = 3 seconds
+</script>
+{% endblock %}
+

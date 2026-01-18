@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+  }
+  .container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 10px;
+  }
+  .teacher-name {
+    text-align: center;
+    font-weight: bold;
+    font-size: 22px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+  }
+  .form-group {
+    margin-bottom: 20px;   /* ✅ প্রতিটি লাইনের মাঝে gap */
+    display: flex;
+    align-items: center;
+  }
+  .form-group label {
+    font-weight: bold;
+    margin-right: 12px;    /* ✅ label আর input এর মাঝে gap */
+    min-width: 120px;      /* ✅ label fixed width */
+    color: #333;
+  }
+  select, input[type="date"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .center-btn {
+    text-align: center;
+    margin: 20px 0;
+  }
+  button {
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #0077cc, #005fa3);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  button:hover {
+    transform: scale(1.05);
+  }
+  .warning-msg {
+    color: orange;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
+
+<div class="container">
+  <h2>Teacher Dashboard</h2>
+  <p class="teacher-name">{{ teacher.full_name }}</p>
+
+  <form method="POST" action="{% url 'teacher_dashboard' %}">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label>Select Class:</label>
+      <select name="class_obj" required>
+        {% for c in classes %}
+        <option value="{{ c.id }}" {% if c.id == selected_class %}selected{% endif %}>
+          {{ c.code }} - {{ c.title }} ({{ c.semester }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Select Date:</label>
+      <input type="date" name="date" required value="{{ selected_date }}">
+    </div>
+
+    <div class="form-group">
+      <label>Select Time Slot:</label>
+      <select name="time_slot" required>
+        {% for ts in time_slots %}
+        <option value="{{ ts.id }}" {% if ts.id == selected_time_slot %}selected{% endif %}>
+          {{ ts.start_time }} - {{ ts.end_time }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="center-btn">
+      <button type="submit" name="select_class">Take Students Attendance</button>
+    </div>
+
+    <div class="center-btn">
+      <button type="submit" name="show_summary">Attendance Summary</button>
+    </div>
+  </form>
+
+  {% if messages %}
+    <div id="msg-box">
+      {% for message in messages %}
+        <p class="warning-msg">{{ message }}</p>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(function() {
+        var box = document.getElementById("msg-box");
+        if (box) { box.style.display = "none"; }
+      }, 2000);
+    </script>
+  {% endif %}
+</div>
+{% endblock %}
