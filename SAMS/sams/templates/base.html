@@ -11,28 +11,43 @@
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">SAMS</a>
+      <a class="navbar-brand fw-bold" href="#">SAMS</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
+
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
 
-          <!-- Notification Button (redirects to page) -->
+          <!-- Parent Navbar -->
           {% if request.user.is_authenticated and request.user.role == 'PARENT' %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'parent_notifications' %}">
-              🔔 Notifications
-              {% if navbar_unread_count > 0 %}
-                <span class="badge bg-danger">{{ navbar_unread_count }}</span>
-              {% endif %}
-            </a>
-          </li>
+            <li class="nav-item">
+              <a class="nav-link position-relative" href="{% url 'parent_notifications' %}">
+                🔔 Notifications
+                {% if navbar_unread_count > 0 %}
+                  <span class="badge bg-danger">{{ navbar_unread_count }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
           {% endif %}
 
-          <!-- Auth Links -->
-          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+          <!-- Student Navbar -->
+          {% if request.user.is_authenticated and request.user.role == 'STUDENT' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
+          {% endif %}
+
+          <!-- Teacher Navbar -->
+          {% if request.user.is_authenticated and request.user.role == 'TEACHER' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
+          {% endif %}
+
         </ul>
       </div>
     </div>
